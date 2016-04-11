@@ -34,6 +34,7 @@ void playCraps(void);
 int getWallet(void);
 int makeBet(int);
 int doAgain(void);
+char playAgain(void);
 void goodbye(int);
 int playRound(void);
 int rollForPoint(int);
@@ -54,22 +55,30 @@ int main(void)
 {
 	char name[MAX_NAME_LENGTH];
 	int gamenum;
+	char response;
 
 	printf("Hi my name is Pixel...Welcome to the Game Centre, what is your name: ");
 	scanf("%s", &name);
-	printf("\nHi %s what game would you like to play?\n"
-		"1. Craps\n"
-		"2. Tic-Tac-Toe\n"
-		"3. Guess the number\n"
-		"Enter the number: ", name);
-	scanf("%d", &gamenum);
 
-	if (gamenum == 1)
-		playCraps();
-	else if (gamenum == 2)
-		playTicTacToe(name);
-	else if (gamenum == 3)
-		printf("Game under development...check back soon!");
+	do{
+		printf("\nHi %s what game would you like to play?\n"
+			"1. Craps\n"
+			"2. Tic-Tac-Toe\n"
+			"3. Guess the number\n"
+			"Enter the number: ", name);
+		scanf("%d", &gamenum);
+
+		if (gamenum == 1)
+			playCraps();
+		else if (gamenum == 2)
+			playTicTacToe(name);
+		else if (gamenum == 3)
+			printf("Game under development...check back soon!");
+
+		response = playAgain();
+	} while (response == 'y' || response == 'Y');
+
+
 
 	system("pause");
 	return 0;
@@ -125,15 +134,18 @@ void playTicTacToe(char name1[])
 	ordersymbol[index] = symbol2;
 	ordersymbol[index + 1] = symbol1;
 
-	initializeGrid(grid);
-	printf("Enter the number corresponding to grid.\n\n");
-	
-	index = round_TTT(grid, ordersymbol, ordername);
-	
-	if (index == TIE)
-		printf("Tie game!\n");
-	else
-		printf("%s wins!\n", ordername[abs(index - 1)]);
+	do
+	{
+		initializeGrid(grid);
+		printf("Enter the number corresponding to grid.\n\n");
+
+		index = round_TTT(grid, ordersymbol, ordername);
+
+		if (index == TIE)
+			printf("Tie game!\n");
+		else
+			printf("%s wins!\n", ordername[abs(index - 1)]);
+	} while (doAgain());
 }
 
 /*
@@ -445,13 +457,26 @@ int makeBet(int wallet)
 }
 
 /*
+prompts user to return to main menu
+Returns: TRUE if yes, false otherwise
+*/
+char playAgain(void)
+{
+	char response;
+	printf("Would you like to return to the main menu? (Y/N): ");
+	scanf(" %c", &response);
+
+	return response;
+}
+
+/*
 prompts user to play again
 Returns: TRUE if yes, false otherwise
 */
 int doAgain(void)
 {
 	int response;
-	printf("Enter 1 to play again, 0 to quit.\n");
+	printf("Enter 1 to play again, 0 to quit: ");
 	scanf("%d", &response);
 
 	return response;
