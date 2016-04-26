@@ -41,7 +41,7 @@ int rollForPoint(int);
 int rollDice(void);
 int rollDie(void);
 
-void playTicTacToe(char name1[]);
+void playTicTacToe(void);
 int winRound(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH], int count);
 void initializeGrid(char array[ROW_SIZE][COLUMN_SIZE]);
 void printGrid(char array[ROW_SIZE][COLUMN_SIZE]);
@@ -53,25 +53,25 @@ void adding_apos_s(int name_position, char name[][MAX_NAME_LENGTH], char copynam
 
 int main(void)
 {
-	char name[MAX_NAME_LENGTH];
+	//char name[MAX_NAME_LENGTH];
 	int gamenum;
 	char response;
 
-	printf("Hi my name is Pixel...Welcome to the Game Centre, what is your name: ");
-	scanf("%s", &name);
+	printf("Hi my name is Pixel...Welcome to the Game Centre,\n");
+	//scanf("%s", &name);
 
 	do{
-		printf("\nHi %s what game would you like to play?\n"
+		printf("\nWhat game would you like to play?\n"
 			"1. Craps\n"
 			"2. Tic-Tac-Toe\n"
 			"3. Guess the number\n"
-			"Enter the number: ", name);
+			"Enter the number: ");
 		scanf("%d", &gamenum);
 
 		if (gamenum == 1)
 			playCraps();
 		else if (gamenum == 2)
-			playTicTacToe(name);
+			playTicTacToe();
 		else if (gamenum == 3)
 			printf("Game under development...check back soon!");
 
@@ -88,7 +88,7 @@ play TicTacToe, calling all appropriate functions
 Parameters: name of original player
 Return Type: none
 */
-void playTicTacToe(char name1[])
+void playTicTacToe(void)
 {
 	char copyname[MAX_NAME_LENGTH];
 	char grid[ROW_SIZE][COLUMN_SIZE];
@@ -99,19 +99,10 @@ void playTicTacToe(char name1[])
 	int index = 0;
 	int result = FALSE;
 
-	printf("Hi %s, welcome to Tic-Tac-Toe, enter your opponents name: \n", name1);
-	Sleep(1500);
-	printf("\nWait...\n");
-	Sleep(1500);
-	printf("\nWhat was your name again? I'm sorry I have terrible memory (heads up you will\nbe going second): ");
-	scanf("%s", ordername[index + 1]);
-	printf("\nJust kidding, the creator of the program had to find an alternative way to\ndo something.\n");
-	Sleep(1500);
-	printf("\nLet's start over...");
-	Sleep(1250);
-	system("cls");
-	printf("Welcome back %s! Enter the name of the opponent: ", ordername[index + 1]);
+	printf("Who wants to go first? Enter name: ");
 	scanf("%s", ordername[index]);
+	printf("Enter the name of the opponent: ");
+	scanf("%s", ordername[index+1]);
 	printf("%s would you like to be X or O? Enter the character: ", ordername[index]);
 	scanf(" %c", &symbol2);			//the empty space in front of %c tells to ignore invisible character i.e. '\n'
 
