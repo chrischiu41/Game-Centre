@@ -69,8 +69,8 @@ int fillGrid(int position, char symbol, char grid[ROW_SIZE][COLUMN_SIZE]);
 int round_TTT(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH]);
 //hangman
 void playHangMan(void);
-void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag);
-int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start);
+void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[]);
+int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start, char copyarray[]);
 void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag);
 
 //universal
@@ -125,13 +125,14 @@ void playHangMan(void)
 	int row_index;
 	char word[MAX_NAME_LENGTH];
 	char wordarray[38][MAX_NAME_LENGTH];
+	char copyarray[38];
 	char category[5][20] = { "Animals.txt", "Countries.txt", "Companies.txt", "Science.txt", "Palindromes.txt" };
 	int i = 0;
 	int length;
 	int index_of_correct[20];
 	int flag = 0;
 
-	col_index = rand() % 4;
+	col_index = rand() % 5;
 
 	inFile = fopen(category[col_index], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
 	if (inFile == NULL)
@@ -146,12 +147,13 @@ void playHangMan(void)
 		fclose(inFile);
 
 		if (col_index == 4)
-			row_index = rand() % 11;
+			row_index = rand() % 12;
 		else
-			row_index = rand() % 37;
+			row_index = rand() % 38;
 
 		length = strlen(wordarray[row_index]);
-		initializeHangMan(length, wordarray, row_index, index_of_correct, flag);
+		initializeHangMan(length, wordarray, row_index, index_of_correct, flag, copyarray);
+		printf("%s", wordarray[row_index]);
 	
 		fill_bar(length, wordarray, row_index, index_of_correct, flag);
 	}
@@ -195,10 +197,10 @@ void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int 
 
 /*
 Draws the hangman picture
-Parameter: Takes in number of lives lost (int) and number of letters in the word, array of index of correctly guess and int flag
+Parameter: Takes in number of lives lost, number of letters, array of index of correctly guess, int flag, and an array to copy
 Return Type: none (prints pic)
 */
-void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag)
+void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[])
 {
 	int i;
 	int underline[50];
@@ -213,13 +215,13 @@ void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int ro
 	if (wordlength <= 10)
 		printf("            ");
 
-	cutoff = printbars(wordlength, wordarray, row_index, 0);
+	cutoff = printbars(wordlength, wordarray, row_index, 0, copyarray);
 	printf("\n");
 	printf("|  |  /  /             ||      ");
 	
 	if (cutoff!=0)
 	{
-		printbars(wordlength, wordarray, row_index, cutoff);
+		printbars(wordlength, wordarray, row_index, cutoff, copyarray);
 		printf("\n");
 	}
 	else
@@ -259,29 +261,36 @@ void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int ro
 
 /*
 Prints underscores and any symbols that aren't letters
-Parameters: length of the word being printed, and the word itself, and index of starting
+Parameters: length of the word being printed, and the word itself, index of starting, copy array
 Return Type: the index where it cuts off
 */
-int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start)
+int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start, char copyarray[])
 {
 	int i;
 	int cutoff=0;
 	static int count = 0;					//static means once the function is left and is called again, the value is saved
 
-	for (i = start; i < wordlength; i++)
+	for (i = 0; i < wordlength; i++)
 	{
 		if (wordarray[row_index][i] == '-')
-			printf("  ");
+			copyarray[i] = ' ';
 		else if (wordarray[row_index][i] == '\'')
-			printf("'");
+			copyarray[i] = '\'';
 		else if (wordarray[row_index][i] == '?')
-			printf("? ");
+			copyarray[i] = '?';
 		else if (wordarray[row_index][i] == ',')
-			printf(", ");
+			copyarray[i] = ',';
 		else if (wordarray[row_index][i] == '.')
-			printf(". ");
+			copyarray[i] = '.';
 		else
-			printf("_ ");
+			copyarray[i] = '_';
+	}
+	copyarray[i] = '\0';
+
+	for (i = start; i < wordlength; i++)
+	{
+		printf("%c ", copyarray[i]);
+		
 
 		if (i >= 20 && wordarray[row_index][i] == '-' && count == 0)
 		{
