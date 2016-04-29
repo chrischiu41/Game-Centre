@@ -135,8 +135,8 @@ void playHangMan(void)
 	int flag = 0;
 
 	col_index = rand() % NUMCOLS;
-	col_index = 4;///////////////////////////////////
-	inFile = fopen(category[4], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
+	//col_index = 4;///////////////////////////////////
+	inFile = fopen(category[col_index], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
 	if (inFile == NULL)
 		printf("Error: could not locate file.\n");
 	else
