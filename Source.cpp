@@ -158,7 +158,10 @@ void playHangMan(void)
 		for (i = 0; i < length; i++)
 		{
 			if (wordarray[row_index][i] == '-')
+			{
 				copyarray[i] = ' ';
+				wordarray[row_index][i] = ' ';
+			}
 			else if (wordarray[row_index][i] == '\'')
 				copyarray[i] = '\'';
 			else if (wordarray[row_index][i] == '?')
@@ -189,7 +192,7 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 {
 	int match;
 	int i = 0;
-	int j;
+	int j,k;
 	int z = 0;
 	int count = 0;
 	int gameend = -1;
@@ -220,6 +223,11 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 
 			if (count == MAX_GUESSES)
 				gameend = LOST;
+		}
+		else
+		{
+			if (strcmp(wordarray[row_index], copyarray) == 0)
+				gameend = WON;
 		}
 
 		flag++;
