@@ -10,12 +10,28 @@
 #include <time.h>
 #include <Windows.h>
 
+#define ORIGINAL "textfile.txt"
+#define ANIMALS "Animals.txt"
+#define COUNTRIES "Countries.txt"
+#define COMPANIES "Companies.txt"
+#define SCIENCE "Science.txt"
+#define PALINDROMES "Palindromes.txt"
+
+#define ANIMALS_COL 0
+#define SCIENCE_COL 1
+#define COUNTRIES_COL 2
+#define COMPANIES_COL 3
+#define PALINDROMES_COL 4
+#define NUMCOLS 5
+#define NUMROWS 39
+#define START 0
+
 #define MIN_BET 5
 #define TRUE 1
 #define FALSE 0
 #define TIE 3
 #define MAX_ROLL 6
-#define MAX_NAME_LENGTH 100
+#define MAX_NAME_LENGTH 1000
 
 #define ROW_SIZE 5
 #define COLUMN_SIZE 33
@@ -30,6 +46,8 @@
 #define POS_NIN grid[4][9]
 
 //function prototypes
+
+//craps
 void playCraps(void);
 int getWallet(void);
 int makeBet(int);
@@ -40,22 +58,28 @@ int playRound(void);
 int rollForPoint(int);
 int rollDice(void);
 int rollDie(void);
-
+//tic tac toe
 void playTicTacToe(void);
 int winRound(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH], int count);
 void initializeGrid(char array[ROW_SIZE][COLUMN_SIZE]);
 void printGrid(char array[ROW_SIZE][COLUMN_SIZE]);
 int fillGrid(int position, char symbol, char grid[ROW_SIZE][COLUMN_SIZE]);
 int round_TTT(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH]);
+//hangman
+void playHangMan(void);
+void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index);
 
-
+//universal
 void adding_apos_s(int name_position, char name[][MAX_NAME_LENGTH], char copyname[]);
+void copy_1D_to_2D(char word[MAX_NAME_LENGTH], char wordarray[][MAX_NAME_LENGTH], int i);
+int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start);
 
 int main(void)
 {
 	//char name[MAX_NAME_LENGTH];
 	int gamenum;
 	char response;
+	srand(time(NULL));
 
 	printf("Hi my name is Pixel...Welcome to the Game Centre,\n");
 	//scanf("%s", &name);
@@ -64,7 +88,8 @@ int main(void)
 		printf("\nWhat game would you like to play?\n"
 			"1. Craps\n"
 			"2. Tic-Tac-Toe\n"
-			"3. Guess the number\n"
+			"3. Hangman\n"
+			"4. Guess the number\n"
 			"Enter the number: ");
 		scanf("%d", &gamenum);
 
@@ -73,7 +98,9 @@ int main(void)
 		else if (gamenum == 2)
 			playTicTacToe();
 		else if (gamenum == 3)
-			printf("Game under development...check back soon!");
+			playHangMan();
+		else if (gamenum == 4)
+			printf("Game under development.\n");
 
 		response = playAgain();
 	} while (response == 'y' || response == 'Y');
@@ -83,6 +110,160 @@ int main(void)
 	system("pause");
 	return 0;
 }
+/*
+plays a round of hangman, calling all appropriate functions
+Parameters/return type: none
+*/
+void playHangMan(void)
+{
+	FILE* inFile;
+	int col_index;
+	int row_index;
+	char word[MAX_NAME_LENGTH];
+	char wordarray[38][MAX_NAME_LENGTH];
+	char category[5][20] = { "Animals.txt", "Countries.txt", "Companies.txt", "Science.txt", "Palindromes.txt" };
+	char text[NUMROWS][NUMCOLS];
+	int i = 0;
+	int length;
+
+	col_index = rand() % 4;
+
+	inFile = fopen(category[col_index], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
+	if (inFile == NULL)
+		printf("Error: could not locate file.\n");
+	else
+	{
+		while (fscanf(inFile, "%s", &word) == 1)
+		{
+			copy_1D_to_2D(word, wordarray, i);
+			i++;
+		}
+		fclose(inFile);
+
+		if (col_index == 4)
+			row_index = rand() % 11;
+		else
+			row_index = rand() % 37;
+
+		length = strlen(wordarray[row_index]);
+		initializeHangMan(length, wordarray, row_index);
+		}
+			
+}
+
+/*
+Copies a string stored in a 1D array into a 2D array
+Parameters: char 1D array, char 2D array, int index
+Return Type: none
+*/
+
+void copy_1D_to_2D(char word[MAX_NAME_LENGTH], char wordarray[][MAX_NAME_LENGTH], int i)
+{
+	int length;
+	int count;
+
+	length = strlen(word);
+	for (count = 0; count < length; count++)
+	{
+		wordarray[i][count] = word[count];
+	}
+	wordarray[i][count] = '\0';
+}
+
+/*
+Draws the hangman picture
+Parameter: Takes in number of lives lost (int) and number of letters in the word
+Return Type: none (prints pic)
+*/
+
+void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index)
+{
+	int i;
+	int underline[50];
+	int cutoff;
+
+	//memset(underline, '_ ', wordlength);		useless due to for loop below but memset is cool
+
+	printf(" ____________________________\n"
+		"|  ______   ___________))____|\n"
+		"|  |    /  /           ||\n"
+		"|  |   /  /            ||      ");
+	
+	cutoff = printbars(wordlength, wordarray, row_index, 0);
+
+	printf("\n");
+	printf("|  |  /  /             ||      ");
+	
+	if (cutoff!=0)
+	{
+		printbars(wordlength, wordarray, row_index, cutoff);
+		printf("\n");
+	}
+	else
+		printf("\n");
+
+	printf("|  | /  /             .-~-.\n"
+		"|  |/  /             :     :\n"
+		"|  /  /              ' x  x'      Guessed: \n"
+		"|    /               '.___.'\n");
+	
+	printf("|   /                .~~||~.\n"
+		"|  /                /Y .  .Y\\ \n"
+		"|  |               //|     |\\\\ \n"							//MUST INCLUDE two backslashes in order for \ to show
+		"|  |              // |   . | \\\\ \n"
+		"|  |             (o  \\_____/  o) \n"
+		"|  |                 (     ) \n"
+		"|  |                 | /^\\ | \n"
+		"|  |                 | | | | \n"
+		"|  |                 | | | | \n"
+		"|  |                (__) (__) \n"
+		"|  |________________   \n"
+		"|                   \\ \n"
+		"|____________________\\ \n");
+}
+
+/*
+Prints underscores and any symbols that aren't letters
+Parameters: length of the word being printed, and the word itself, and index of starting
+Return Type: the index where it cuts off
+*/
+
+int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start)
+{
+	int i;
+	int cutoff=0;
+	static int count = 0;
+
+	for (i = start; i < wordlength; i++)
+	{
+		if (wordarray[row_index][i] == '-')
+			printf("  ");
+		else if (wordarray[row_index][i] == '\'')
+			printf("'");
+		else if (wordarray[row_index][i] == '?')
+			printf("? ");
+		else if (wordarray[row_index][i] == ',')
+			printf(", ");
+		else if (wordarray[row_index][i] == '.')
+			printf(". ");
+		else
+			printf("_ ");
+
+		if (i >= 20 && wordarray[row_index][i] == '-' && count == 0)
+		{
+			count++;
+			return i;
+		}
+	}
+	
+	return 0;
+}
+
+
+
+
+
+
 /*
 play TicTacToe, calling all appropriate functions
 Parameters: name of original player
