@@ -187,16 +187,17 @@ Return Type: none
 */
 void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, char guessed_letters[], int flag, char copyarray[])
 {
+	int match;
 	int i = 0;
 	int j;
 	int z = 0;
 	int count = 0;
-	int wongame = FALSE;
-	int lostgame = FALSE;
+	int gameend = -1;
 	
 	flag = 0;
 	do
 	{	
+		match = FALSE;
 		printf("Enter a letter: ");
 		scanf(" %c", &guessed_letters[i]);		//I don't know why putting a space in front of %c makes it work???
 		guessed_letters[i + 1] = '\0';
@@ -204,19 +205,27 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 		for (j = 0; j < wordlength; j++)
 		{
 			if (guessed_letters[i] == wordarray[row_index][j])
-				copyarray[j] = guessed_letters[i];
-			else
-				count++;
-			if (count == MAX_GUESSES)
 			{
-				lostgame == TRUE;
+				copyarray[j] = guessed_letters[i];
+				match = TRUE;
 			}
-	
 		}
+
+		if (!match)
+		{
+			count++;
+			printf("WRONG");
+			printf(" %d", count);
+			Sleep(1000);
+
+			if (count == MAX_GUESSES)
+				gameend = LOST;
+		}
+
 		flag++;
 		i++;
 		initializeHangMan(wordlength, row_index, flag, copyarray, guessed_letters);
-	} while (!wongame && !lostgame);
+	} while (gameend == -1);
 
 	
 }
