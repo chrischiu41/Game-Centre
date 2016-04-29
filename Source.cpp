@@ -72,7 +72,7 @@ int round_TTT(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX
 //hangman
 void playHangMan(void);
 void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int flag, char copyarray[]);
-int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start, char copyarray[]);
+int printbars(int wordlength, int start, char copyarray[]);
 void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[]);
 
 //universal
@@ -135,7 +135,7 @@ void playHangMan(void)
 	int flag = 0;
 
 	col_index = rand() % NUMCOLS;
-
+	//col_index = 4;///////////////////////////////////
 	inFile = fopen(category[col_index], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
 	if (inFile == NULL)
 		printf("Error: could not locate file.\n");
@@ -149,11 +149,29 @@ void playHangMan(void)
 		fclose(inFile);
 
 		if (col_index == 4)
-			row_index = rand() % NUMCOLSPALINDROME;
+			row_index = rand() % NUMCOLSPALINDROME-1;
 		else
 			row_index = rand() % NUMROWS;
 
 		length = strlen(wordarray[row_index]);
+
+		for (i = 0; i < length; i++)
+		{
+			if (wordarray[row_index][i] == '-')
+				copyarray[i] = ' ';
+			else if (wordarray[row_index][i] == '\'')
+				copyarray[i] = '\'';
+			else if (wordarray[row_index][i] == '?')
+				copyarray[i] = '?';
+			else if (wordarray[row_index][i] == ',')
+				copyarray[i] = ',';
+			else if (wordarray[row_index][i] == '.')
+				copyarray[i] = '.';
+			else
+				copyarray[i] = '_';
+		}
+		copyarray[i] = '\0';
+
 		initializeHangMan(length, wordarray, row_index, flag, copyarray);
 		printf("%s", wordarray[row_index]);
 	
@@ -176,6 +194,7 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 	int count = 0;
 	int wongame = FALSE;
 	int lostgame = FALSE;
+
 	do
 	{
 		flag = 0;
@@ -220,22 +239,26 @@ void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int ro
 		"|  |   /  /            ||      ");
 	if (wordlength <= 10)
 		printf("            ");
-
-	if (flag)/////////////////////////////////////////////not working
+	if (flag == 0)
 	{
-		for (i = 0; i < wordlength; i++)
-		{
-			printf("%c ", copyarray[i]);
-		}
+		cutoff = printbars(wordlength, 0, copyarray);
+		printf("\n");
+		printf("|  |  /  /             ||      ");
+		if (cutoff != 0)
+			printbars(wordlength, cutoff, copyarray);
 		printf("\n");
 	}
-	else
+	else if (flag)
 	{
-		cutoff = printbars(wordlength, wordarray, row_index, 0, copyarray);
+		cutoff = printbars(wordlength, flag, copyarray);
+		printf("\n");
+		printf("|  |  /  /             ||      ");
+		if (cutoff != 0)
+			printbars(wordlength, cutoff, copyarray);
 		printf("\n");
 	}
+	
 
-	printf("|  |  /  /             ||      \n");
 
 	printf("|  | /  /             .-~-.\n"
 		"|  |/  /             :     :\n"
@@ -271,36 +294,19 @@ void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int ro
 
 /*
 Prints underscores and any symbols that aren't letters
-Parameters: length of the word being printed, and the word itself, index of starting, copy array
+Parameters: length of the word being printed, index of starting, copy array
 Return Type: the index where it cuts off
 */
-int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start, char copyarray[])
+int printbars(int wordlength, int start, char copyarray[])
 {
 	int i;
 	static int count = 0;					//static means once the function is left and is called again, the value is saved
-
-	for (i = 0; i < wordlength; i++)
-	{
-		if (wordarray[row_index][i] == '-')
-			copyarray[i] = ' ';
-		else if (wordarray[row_index][i] == '\'')
-			copyarray[i] = '\'';
-		else if (wordarray[row_index][i] == '?')
-			copyarray[i] = '?';
-		else if (wordarray[row_index][i] == ',')
-			copyarray[i] = ',';
-		else if (wordarray[row_index][i] == '.')
-			copyarray[i] = '.';
-		else
-			copyarray[i] = '_';
-	}
-	copyarray[i] = '\0';
 
 	for (i = start; i < wordlength; i++)
 	{
 		printf("%c ", copyarray[i]);
 
-		if (i >= 20 && wordarray[row_index][i] == '-' && count == 0)
+		if (i >= 20 && copyarray[i] == '-' && count == 0)
 		{
 			count++;
 			return i;
