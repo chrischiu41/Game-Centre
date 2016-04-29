@@ -127,7 +127,7 @@ void playHangMan(void)
 	int row_index;
 	char word[MAX_NAME_LENGTH];
 	char wordarray[NUMROWS][MAX_NAME_LENGTH];
-	char copyarray[NUMROWS];
+	char copyarray[MAX_NAME_LENGTH];
 	char category[NUMCOLS][20] = { "Animals.txt", "Countries.txt", "Companies.txt", "Science.txt", "Palindromes.txt" };
 	int i = 0;
 	int length;
@@ -192,10 +192,11 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 			{
 				//have to enter in a return to tell that you lost
 			}
-
+	
 		}
-
+		flag++;
 		i++;
+		initializeHangMan(wordlength, wordarray, row_index, flag, copyarray);
 	} while (!wongame && !lostgame);
 }
 
@@ -220,17 +221,21 @@ void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int ro
 	if (wordlength <= 10)
 		printf("            ");
 
-	cutoff = printbars(wordlength, wordarray, row_index, 0, copyarray);
-	printf("\n");
-	printf("|  |  /  /             ||      ");
-	
-	if (cutoff!=0)
+	if (flag)/////////////////////////////////////////////not working
 	{
-		printbars(wordlength, wordarray, row_index, cutoff, copyarray);
+		for (i = 0; i < wordlength; i++)
+		{
+			printf("%c ", copyarray[i]);
+		}
 		printf("\n");
 	}
 	else
+	{
+		cutoff = printbars(wordlength, wordarray, row_index, 0, copyarray);
 		printf("\n");
+	}
+
+	printf("|  |  /  /             ||      \n");
 
 	printf("|  | /  /             .-~-.\n"
 		"|  |/  /             :     :\n"
@@ -240,14 +245,14 @@ void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int ro
 	printf("|   /                .~~||~.\n"
 		"|  /                /Y .  .Y\\       Guessed:  ");
 	//////////////////////////////////////////////////////////////ADD GUESSES_LETTERS array and printf
-	if (flag)
-	{
-		for (i = 0; i < 26; i++)
-		{
-			printf("FIX ME");
-		}
-	}
-	else
+//	if (flag)
+//	{
+//		for (i = 0; i < wordlength; i++)
+//		{
+//			printf("%c ", copyarray[i]);
+//		}
+//	}
+//	else
 		printf("\n");
 
 
