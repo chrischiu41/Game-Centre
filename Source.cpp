@@ -27,6 +27,8 @@
 #define START 0
 
 #define MIN_BET 5
+#define WON 1
+#define LOST 0
 #define TRUE 1
 #define FALSE 0
 #define TIE 3
@@ -67,12 +69,14 @@ int fillGrid(int position, char symbol, char grid[ROW_SIZE][COLUMN_SIZE]);
 int round_TTT(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH]);
 //hangman
 void playHangMan(void);
-void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index);
+void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag);
+int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start);
+void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag);
 
 //universal
 void adding_apos_s(int name_position, char name[][MAX_NAME_LENGTH], char copyname[]);
 void copy_1D_to_2D(char word[MAX_NAME_LENGTH], char wordarray[][MAX_NAME_LENGTH], int i);
-int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start);
+
 
 int main(void)
 {
@@ -122,9 +126,10 @@ void playHangMan(void)
 	char word[MAX_NAME_LENGTH];
 	char wordarray[38][MAX_NAME_LENGTH];
 	char category[5][20] = { "Animals.txt", "Countries.txt", "Companies.txt", "Science.txt", "Palindromes.txt" };
-	char text[NUMROWS][NUMCOLS];
 	int i = 0;
 	int length;
+	int index_of_correct[20];
+	int flag = 0;
 
 	col_index = rand() % 4;
 
@@ -146,51 +151,69 @@ void playHangMan(void)
 			row_index = rand() % 37;
 
 		length = strlen(wordarray[row_index]);
-		initializeHangMan(length, wordarray, row_index);
-		}
+		initializeHangMan(length, wordarray, row_index, index_of_correct, flag);
+	
+		fill_bar(length, wordarray, row_index, index_of_correct, flag);
+	}
 			
 }
 
 /*
-Copies a string stored in a 1D array into a 2D array
-Parameters: char 1D array, char 2D array, int index
+Fills in letters that are correct
+Parameter: the word length, the word, the row index, array of correct indices, and a flag (0 for empty and 1 to change)
 Return Type: none
 */
-
-void copy_1D_to_2D(char word[MAX_NAME_LENGTH], char wordarray[][MAX_NAME_LENGTH], int i)
+void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag)
 {
-	int length;
-	int count;
-
-	length = strlen(word);
-	for (count = 0; count < length; count++)
+	char guessed_letters[26];
+	int i = 0;
+	int j;
+	int z = 0;
+	int count = 0;
+	int wongame = FALSE;
+	int lostgame = FALSE;
+	do
 	{
-		wordarray[i][count] = word[count];
-	}
-	wordarray[i][count] = '\0';
+		flag = 0;
+		printf("Enter a letter: ");
+		scanf(" %c", &guessed_letters[i]);		//I don't know why putting a space in front of %c makes it work???
+
+		for (j = 0; j < length; j++)
+		{
+			if (guessed_letters[i] == wordarray[row_index][j])
+			{
+				index_of_correct[z] = j;
+				z++;
+			}
+		}
+
+		i++;
+	} while (!wongame && !lostgame);
 }
+
+
 
 /*
 Draws the hangman picture
-Parameter: Takes in number of lives lost (int) and number of letters in the word
+Parameter: Takes in number of lives lost (int) and number of letters in the word, array of index of correctly guess and int flag
 Return Type: none (prints pic)
 */
-
-void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index)
+void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag)
 {
 	int i;
 	int underline[50];
 	int cutoff;
 
 	//memset(underline, '_ ', wordlength);		useless due to for loop below but memset is cool
-
+	system("cls");
 	printf(" ____________________________\n"
 		"|  ______   ___________))____|\n"
 		"|  |    /  /           ||\n"
 		"|  |   /  /            ||      ");
-	
-	cutoff = printbars(wordlength, wordarray, row_index, 0);
+	if (wordlength <= 10)
+		printf("            ");
 
+	cutoff = printbars(wordlength, wordarray, row_index, 0);
 	printf("\n");
 	printf("|  |  /  /             ||      ");
 	
@@ -204,12 +227,24 @@ void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int ro
 
 	printf("|  | /  /             .-~-.\n"
 		"|  |/  /             :     :\n"
-		"|  /  /              ' x  x'      Guessed: \n"
+		"|  /  /              ' x  x'\n"
 		"|    /               '.___.'\n");
 	
 	printf("|   /                .~~||~.\n"
-		"|  /                /Y .  .Y\\ \n"
-		"|  |               //|     |\\\\ \n"							//MUST INCLUDE two backslashes in order for \ to show
+		"|  /                /Y .  .Y\\       Guessed:  ");
+	//////////////////////////////////////////////////////////////
+	if (flag)
+	{
+		for (i = 0; i < 26; i++)
+		{
+			printf("FIX ME");
+		}
+	}
+	else
+		printf("\n");
+
+
+	printf("|  |               //|     |\\\\ \n"							//MUST INCLUDE two backslashes in order for \ to show
 		"|  |              // |   . | \\\\ \n"
 		"|  |             (o  \\_____/  o) \n"
 		"|  |                 (     ) \n"
@@ -227,12 +262,11 @@ Prints underscores and any symbols that aren't letters
 Parameters: length of the word being printed, and the word itself, and index of starting
 Return Type: the index where it cuts off
 */
-
 int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start)
 {
 	int i;
 	int cutoff=0;
-	static int count = 0;
+	static int count = 0;					//static means once the function is left and is called again, the value is saved
 
 	for (i = start; i < wordlength; i++)
 	{
@@ -259,6 +293,23 @@ int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 	return 0;
 }
 
+/*
+Copies a string stored in a 1D array into a 2D array
+Parameters: char 1D array, char 2D array, int index
+Return Type: none
+*/
+void copy_1D_to_2D(char word[MAX_NAME_LENGTH], char wordarray[][MAX_NAME_LENGTH], int i)
+{
+	int length;
+	int count;
+
+	length = strlen(word);
+	for (count = 0; count < length; count++)
+	{
+		wordarray[i][count] = word[count];
+	}
+	wordarray[i][count] = '\0';
+}
 
 
 
