@@ -35,7 +35,7 @@
 #define FALSE 0
 #define TIE 3
 #define MAX_ROLL 6
-#define MAX_NAME_LENGTH 100
+#define MAX_NAME_LENGTH 50
 
 #define ROW_SIZE 5
 #define COLUMN_SIZE 33
@@ -244,7 +244,7 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 	{
 		cutoff = printbars(wordlength, 0, copyarray, 0);
 		printf("\n");
-		printf("|  |  /  /             ||         ");
+		printf("|  |  /  /             ||        ");
 		if (cutoff != 0)
 		{
 			loopnum++;
@@ -256,7 +256,7 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 	{
 		cutoff = printbars(wordlength, 0, copyarray, 0);
 		printf("\n");
-		printf("|  |  /  /             ||         ");
+		printf("|  |  /  /             ||        ");
 		if (cutoff != 0)
 		{
 			loopnum++;
@@ -312,7 +312,7 @@ int printbars(int wordlength, int start, char copyarray[], int loopnum)
 	{
 		printf("%c ", copyarray[i]);
 
-		if (i > 20 && copyarray[i] == ' ' && loopnum == 0)
+		if (i >= 20 && copyarray[i] == ' ' && loopnum == 0)
 		{
 			loopnum++;
 			return i;
