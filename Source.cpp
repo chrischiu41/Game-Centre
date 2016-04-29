@@ -146,7 +146,7 @@ void playHangMan(void)
 		}
 		fclose(inFile);
 
-		if (col_index == 4)
+		if (col_index == 5)
 			row_index = rand() % 12;
 		else
 			row_index = rand() % 38;
