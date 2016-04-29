@@ -71,9 +71,9 @@ int fillGrid(int position, char symbol, char grid[ROW_SIZE][COLUMN_SIZE]);
 int round_TTT(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH]);
 //hangman
 void playHangMan(void);
-void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]);
+void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[], char guessed_letters[]);
 int printbars(int wordlength, int start, char copyarray[], int loopnum);
-void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[]);
+void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, char guessed_letters[26], int flag, char copyarray[]);
 
 //universal
 void adding_apos_s(int name_position, char name[][MAX_NAME_LENGTH], char copyname[]);
@@ -131,8 +131,8 @@ void playHangMan(void)
 	char category[NUMCOLS][20] = { "Animals.txt", "Countries.txt", "Companies.txt", "Science.txt", "Palindromes.txt" };
 	int i = 0;
 	int length;
-	int index_of_correct[20];
 	int flag = 0;
+	char guessed_letters[26];
 
 	col_index = rand() % NUMCOLS;
 	col_index = 4;///////////////////////////////////
@@ -149,7 +149,7 @@ void playHangMan(void)
 		fclose(inFile);
 
 		if (col_index == 4)
-			row_index = rand() % NUMCOLSPALINDROME-1;
+			row_index = rand() % (NUMCOLSPALINDROME-1);
 		else
 			row_index = rand() % NUMROWS;
 
@@ -172,22 +172,21 @@ void playHangMan(void)
 		}
 		copyarray[i] = '\0';
 
-		initializeHangMan(length, row_index, flag, copyarray);
+		initializeHangMan(length, row_index, flag, copyarray, guessed_letters);
 		printf("%s", wordarray[row_index]);
 	
-		fill_bar(length, wordarray, row_index, index_of_correct, flag, copyarray);
+		fill_bar(length, wordarray, row_index, guessed_letters, flag, copyarray);
 	}
 			
 }
 
 /*
 Fills in letters that are correct
-Parameter: the word length, the word, the row index, array of correct indices, and a flag (0 for empty and 1 to change), copyarray
+Parameter: the word length, the word, the row index, array of guessed letters, and a flag (0 for empty and 1 to change), copyarray
 Return Type: none
 */
-void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[])
+void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, char guessed_letters[], int flag, char copyarray[])
 {
-	char guessed_letters[26];
 	int i = 0;
 	int j;
 	int z = 0;
@@ -200,6 +199,7 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 	{	
 		printf("Enter a letter: ");
 		scanf(" %c", &guessed_letters[i]);		//I don't know why putting a space in front of %c makes it work???
+		guessed_letters[i + 1] = '\0';
 
 		for (j = 0; j < wordlength; j++)
 		{
@@ -209,15 +209,13 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 				count++;
 			if (count == MAX_GUESSES)
 			{
-				printf("You've guessed %d incorrect", count);
 				lostgame == TRUE;
 			}
 	
 		}
 		flag++;
 		i++;
-		Sleep(1000);
-		initializeHangMan(wordlength, row_index, flag, copyarray);
+		initializeHangMan(wordlength, row_index, flag, copyarray, guessed_letters);
 	} while (!wongame && !lostgame);
 
 	
@@ -230,11 +228,12 @@ Draws the hangman picture
 Parameter: Takes in number of lives lost, number of letters, int flag, and an array to copy
 Return Type: none (prints pic)
 */
-void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[])
+void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[], char guessed_letters[26])
 {
 	int i;
 	int cutoff;
 	int loopnum=0;
+	int length;
 
 	//memset(underline, '_ ', wordlength);		useless due to for loop below but memset is cool
 	system("cls");
@@ -275,19 +274,16 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 		"|  |/  /             :     :\n"
 		"|  /  /              ' x  x'\n"
 		"|    /               '.___.'\n");
-	
-	printf("|   /                .~~||~.\n"
-		"|  /                /Y .  .Y\\       Guessed:  ");
-	//////////////////////////////////////////////////////////////ADD GUESSES_LETTERS array and printf
-//	if (flag)
-//	{
-//		for (i = 0; i < wordlength; i++)
-//		{
-//			printf("%c ", copyarray[i]);
-//		}
-//	}
-//	else
-		printf("\n");
+	printf("|   /                .~| |~.\n"
+		"|  /                /Y .  .Y\\     Guessed: ");
+
+	if (flag)
+	{
+		length = strlen(guessed_letters);
+		for (i = 0; i < length; i++)
+			printf("%c ", guessed_letters[i]);
+	}
+	printf("\n");
 
 
 	printf("|  |               //|     |\\\\ \n"							//MUST INCLUDE two backslashes in order for \ to show
