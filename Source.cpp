@@ -132,7 +132,7 @@ void playHangMan(void)
 	int i = 0;
 	int length;
 	int flag = 0;
-	char guessed_letters[26];
+	char guessed_letters[26] = { ' ' };
 
 	col_index = rand() % NUMCOLS;
 	col_index = 4;///////////////////////////////////
@@ -280,14 +280,19 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 	if (flag)
 	{
 		length = strlen(guessed_letters);
-		for (i = 0; i < length; i++)
+		for (i = 0; i < 13; i++)
 			printf("%c ", guessed_letters[i]);
+		printf("\n|  |               //|     |\\\\               ");
+		while (i < length)
+		{
+			printf("%c ", guessed_letters[i]);
+			i++;
+		}
+		printf("\n");
 	}
-	printf("\n");
-
-
-	printf("|  |               //|     |\\\\ \n"							//MUST INCLUDE two backslashes in order for \ to show
-		"|  |              // |   . | \\\\ \n"
+	else
+		printf("\n|  |               //|     |\\\\ \n");							//MUST INCLUDE two backslashes in order for \ to show
+	printf("|  |              // |   . | \\\\ \n"
 		"|  |             (o  \\_____/  o) \n"
 		"|  |                 (     ) \n"
 		"|  |                 | /^\\ | \n"
