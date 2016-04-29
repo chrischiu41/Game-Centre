@@ -25,6 +25,7 @@
 #define NUMCOLS 5
 #define NUMROWS 39
 #define START 0
+#define MAX_GUESSES 6
 
 #define MIN_BET 5
 #define WON 1
@@ -69,9 +70,9 @@ int fillGrid(int position, char symbol, char grid[ROW_SIZE][COLUMN_SIZE]);
 int round_TTT(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH]);
 //hangman
 void playHangMan(void);
-void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[]);
+void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int flag, char copyarray[]);
 int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start, char copyarray[]);
-void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag);
+void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[]);
 
 //universal
 void adding_apos_s(int name_position, char name[][MAX_NAME_LENGTH], char copyname[]);
@@ -146,26 +147,26 @@ void playHangMan(void)
 		}
 		fclose(inFile);
 
-		if (col_index == 5)
+		if (col_index == 4)
 			row_index = rand() % 12;
 		else
 			row_index = rand() % 38;
 
 		length = strlen(wordarray[row_index]);
-		initializeHangMan(length, wordarray, row_index, index_of_correct, flag, copyarray);
+		initializeHangMan(length, wordarray, row_index, flag, copyarray);
 		printf("%s", wordarray[row_index]);
 	
-		fill_bar(length, wordarray, row_index, index_of_correct, flag);
+		fill_bar(length, wordarray, row_index, index_of_correct, flag, copyarray);
 	}
 			
 }
 
 /*
 Fills in letters that are correct
-Parameter: the word length, the word, the row index, array of correct indices, and a flag (0 for empty and 1 to change)
+Parameter: the word length, the word, the row index, array of correct indices, and a flag (0 for empty and 1 to change), copyarray
 Return Type: none
 */
-void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag)
+void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[])
 {
 	char guessed_letters[26];
 	int i = 0;
@@ -180,13 +181,17 @@ void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int 
 		printf("Enter a letter: ");
 		scanf(" %c", &guessed_letters[i]);		//I don't know why putting a space in front of %c makes it work???
 
-		for (j = 0; j < length; j++)
+		for (j = 0; j < wordlength; j++)
 		{
 			if (guessed_letters[i] == wordarray[row_index][j])
+				copyarray[j] = guessed_letters[i];
+			else
+				count++;
+			if (count == MAX_GUESSES)
 			{
-				index_of_correct[z] = j;
-				z++;
+				//have to enter in a return to tell that you lost
 			}
+
 		}
 
 		i++;
@@ -197,10 +202,10 @@ void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int 
 
 /*
 Draws the hangman picture
-Parameter: Takes in number of lives lost, number of letters, array of index of correctly guess, int flag, and an array to copy
+Parameter: Takes in number of lives lost, number of letters, int flag, and an array to copy
 Return Type: none (prints pic)
 */
-void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[])
+void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int flag, char copyarray[])
 {
 	int i;
 	int underline[50];
@@ -234,7 +239,7 @@ void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int ro
 	
 	printf("|   /                .~~||~.\n"
 		"|  /                /Y .  .Y\\       Guessed:  ");
-	//////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////ADD GUESSES_LETTERS array and printf
 	if (flag)
 	{
 		for (i = 0; i < 26; i++)
@@ -290,7 +295,6 @@ int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 	for (i = start; i < wordlength; i++)
 	{
 		printf("%c ", copyarray[i]);
-		
 
 		if (i >= 20 && wordarray[row_index][i] == '-' && count == 0)
 		{
