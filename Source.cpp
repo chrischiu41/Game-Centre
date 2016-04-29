@@ -23,7 +23,8 @@
 #define COMPANIES_COL 3
 #define PALINDROMES_COL 4
 #define NUMCOLS 5
-#define NUMROWS 39
+#define NUMCOLSPALINDROME 12
+#define NUMROWS 38
 #define START 0
 #define MAX_GUESSES 6
 
@@ -125,15 +126,15 @@ void playHangMan(void)
 	int col_index;
 	int row_index;
 	char word[MAX_NAME_LENGTH];
-	char wordarray[38][MAX_NAME_LENGTH];
-	char copyarray[38];
-	char category[5][20] = { "Animals.txt", "Countries.txt", "Companies.txt", "Science.txt", "Palindromes.txt" };
+	char wordarray[NUMROWS][MAX_NAME_LENGTH];
+	char copyarray[NUMROWS];
+	char category[NUMCOLS][20] = { "Animals.txt", "Countries.txt", "Companies.txt", "Science.txt", "Palindromes.txt" };
 	int i = 0;
 	int length;
 	int index_of_correct[20];
 	int flag = 0;
 
-	col_index = rand() % 5;
+	col_index = rand() % NUMCOLS;
 
 	inFile = fopen(category[col_index], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
 	if (inFile == NULL)
@@ -148,9 +149,9 @@ void playHangMan(void)
 		fclose(inFile);
 
 		if (col_index == 4)
-			row_index = rand() % 12;
+			row_index = rand() % NUMCOLSPALINDROME;
 		else
-			row_index = rand() % 38;
+			row_index = rand() % NUMROWS;
 
 		length = strlen(wordarray[row_index]);
 		initializeHangMan(length, wordarray, row_index, flag, copyarray);
@@ -208,7 +209,6 @@ Return Type: none (prints pic)
 void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int flag, char copyarray[])
 {
 	int i;
-	int underline[50];
 	int cutoff;
 
 	//memset(underline, '_ ', wordlength);		useless due to for loop below but memset is cool
@@ -272,7 +272,6 @@ Return Type: the index where it cuts off
 int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start, char copyarray[])
 {
 	int i;
-	int cutoff=0;
 	static int count = 0;					//static means once the function is left and is called again, the value is saved
 
 	for (i = 0; i < wordlength; i++)
