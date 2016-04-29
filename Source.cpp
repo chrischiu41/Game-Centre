@@ -72,7 +72,7 @@ int round_TTT(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX
 //hangman
 void playHangMan(void);
 void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]);
-int printbars(int wordlength, int start, char copyarray[]);
+int printbars(int wordlength, int start, char copyarray[], int loopnum);
 void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[]);
 
 //universal
@@ -194,10 +194,10 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 	int count = 0;
 	int wongame = FALSE;
 	int lostgame = FALSE;
-
+	
+	flag = 0;
 	do
-	{
-		flag = 0;
+	{	
 		printf("Enter a letter: ");
 		scanf(" %c", &guessed_letters[i]);		//I don't know why putting a space in front of %c makes it work???
 
@@ -230,6 +230,7 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 {
 	int i;
 	int cutoff;
+	int loopnum=0;
 
 	//memset(underline, '_ ', wordlength);		useless due to for loop below but memset is cool
 	system("cls");
@@ -241,20 +242,26 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 		printf("            ");
 	if (flag == 0)
 	{
-		cutoff = printbars(wordlength, 0, copyarray);
+		cutoff = printbars(wordlength, 0, copyarray, 0);
 		printf("\n");
-		printf("|  |  /  /             ||      ");
+		printf("|  |  /  /             ||         ");
 		if (cutoff != 0)
-			printbars(wordlength, cutoff, copyarray);
+		{
+			loopnum++;
+			printbars(wordlength, cutoff, copyarray, loopnum);
+		}
 		printf("\n");
 	}
 	else
 	{
-		cutoff = printbars(wordlength, 0, copyarray);
+		cutoff = printbars(wordlength, 0, copyarray, 0);
 		printf("\n");
-		printf("|  |  /  /             ||      ");
+		printf("|  |  /  /             ||         ");
 		if (cutoff != 0)
-			printbars(wordlength, cutoff, copyarray);
+		{
+			loopnum++;
+			printbars(wordlength, cutoff, copyarray, loopnum);
+		}
 		printf("\n");
 	}
 	
@@ -294,21 +301,20 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 
 /*
 Prints underscores and any symbols that aren't letters
-Parameters: length of the word being printed, index of starting, copy array
+Parameters: length of the word being printed, index of starting, copy array, loopnum to indicate it's been through
 Return Type: the index where it cuts off
 */
-int printbars(int wordlength, int start, char copyarray[])
+int printbars(int wordlength, int start, char copyarray[], int loopnum)
 {
-	int i;
-	static int count = 0;					//static means once the function is left and is called again, the value is saved
+	int i;		//static means once the function is left and is called again, the value is saved
 
 	for (i = start; i < wordlength; i++)
 	{
 		printf("%c ", copyarray[i]);
 
-		if (i >= 20 && copyarray[i] == ' ' && count==0)
+		if (i > 20 && copyarray[i] == ' ' && loopnum == 0)
 		{
-			count++;
+			loopnum++;
 			return i;
 		}
 	}
