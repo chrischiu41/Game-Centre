@@ -10,12 +10,32 @@
 #include <time.h>
 #include <Windows.h>
 
+#define ORIGINAL "textfile.txt"
+#define ANIMALS "Animals.txt"
+#define COUNTRIES "Countries.txt"
+#define COMPANIES "Companies.txt"
+#define SCIENCE "Science.txt"
+#define PALINDROMES "Palindromes.txt"
+
+#define ANIMALS_COL 0
+#define SCIENCE_COL 1
+#define COUNTRIES_COL 2
+#define COMPANIES_COL 3
+#define PALINDROMES_COL 4
+#define NUMCOLS 5
+#define NUMCOLSPALINDROME 12
+#define NUMROWS 38
+#define START 0
+#define MAX_GUESSES 6
+
 #define MIN_BET 5
+#define WON 1
+#define LOST 0
 #define TRUE 1
 #define FALSE 0
 #define TIE 3
 #define MAX_ROLL 6
-#define MAX_NAME_LENGTH 100
+#define MAX_NAME_LENGTH 1000
 
 #define ROW_SIZE 5
 #define COLUMN_SIZE 33
@@ -30,6 +50,8 @@
 #define POS_NIN grid[4][9]
 
 //function prototypes
+
+//craps
 void playCraps(void);
 int getWallet(void);
 int makeBet(int);
@@ -40,40 +62,51 @@ int playRound(void);
 int rollForPoint(int);
 int rollDice(void);
 int rollDie(void);
-
-void playTicTacToe(char name1[]);
+//tic tac toe
+void playTicTacToe(void);
 int winRound(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH], int count);
 void initializeGrid(char array[ROW_SIZE][COLUMN_SIZE]);
 void printGrid(char array[ROW_SIZE][COLUMN_SIZE]);
 int fillGrid(int position, char symbol, char grid[ROW_SIZE][COLUMN_SIZE]);
 int round_TTT(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH]);
+//hangman
+void playHangMan(void);
+void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int flag, char copyarray[]);
+int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start, char copyarray[]);
+void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[]);
 
-
+//universal
 void adding_apos_s(int name_position, char name[][MAX_NAME_LENGTH], char copyname[]);
+void copy_1D_to_2D(char word[MAX_NAME_LENGTH], char wordarray[][MAX_NAME_LENGTH], int i);
+
 
 int main(void)
 {
-	char name[MAX_NAME_LENGTH];
+	//char name[MAX_NAME_LENGTH];
 	int gamenum;
 	char response;
+	srand(time(NULL));
 
-	printf("Hi my name is Pixel...Welcome to the Game Centre, what is your name: ");
-	scanf("%s", &name);
+	printf("Hi my name is Pixel...Welcome to the Game Centre,\n");
+	//scanf("%s", &name);
 
 	do{
-		printf("\nHi %s what game would you like to play?\n"
+		printf("\nWhat game would you like to play?\n"
 			"1. Craps\n"
 			"2. Tic-Tac-Toe\n"
-			"3. Guess the number\n"
-			"Enter the number: ", name);
+			"3. Hangman\n"
+			"4. Guess the number\n"
+			"Enter the number: ");
 		scanf("%d", &gamenum);
 
 		if (gamenum == 1)
 			playCraps();
 		else if (gamenum == 2)
-			playTicTacToe(name);
+			playTicTacToe();
 		else if (gamenum == 3)
-			printf("Game under development...check back soon!");
+			playHangMan();
+		else if (gamenum == 4)
+			printf("Game under development.\n");
 
 		response = playAgain();
 	} while (response == 'y' || response == 'Y');
@@ -84,11 +117,230 @@ int main(void)
 	return 0;
 }
 /*
+plays a round of hangman, calling all appropriate functions
+Parameters/return type: none
+*/
+void playHangMan(void)
+{
+	FILE* inFile;
+	int col_index;
+	int row_index;
+	char word[MAX_NAME_LENGTH];
+	char wordarray[NUMROWS][MAX_NAME_LENGTH];
+	char copyarray[MAX_NAME_LENGTH];
+	char category[NUMCOLS][20] = { "Animals.txt", "Countries.txt", "Companies.txt", "Science.txt", "Palindromes.txt" };
+	int i = 0;
+	int length;
+	int index_of_correct[20];
+	int flag = 0;
+
+	col_index = rand() % NUMCOLS;
+	col_index = 4;///////////////////////////////////
+	inFile = fopen(category[4], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
+	if (inFile == NULL)
+		printf("Error: could not locate file.\n");
+	else
+	{
+		while (fscanf(inFile, "%s", &word) == 1)
+		{
+			copy_1D_to_2D(word, wordarray, i);
+			i++;
+		}
+		fclose(inFile);
+
+		if (col_index == 4)
+			row_index = rand() % NUMCOLSPALINDROME-1;
+		else
+			row_index = rand() % NUMROWS;
+
+		length = strlen(wordarray[row_index]);
+		initializeHangMan(length, wordarray, row_index, flag, copyarray);
+		printf("%s", wordarray[row_index]);
+	
+		fill_bar(length, wordarray, row_index, index_of_correct, flag, copyarray);
+	}
+			
+}
+
+/*
+Fills in letters that are correct
+Parameter: the word length, the word, the row index, array of correct indices, and a flag (0 for empty and 1 to change), copyarray
+Return Type: none
+*/
+void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[])
+{
+	char guessed_letters[26];
+	int i = 0;
+	int j;
+	int z = 0;
+	int count = 0;
+	int wongame = FALSE;
+	int lostgame = FALSE;
+	do
+	{
+		flag = 0;
+		printf("Enter a letter: ");
+		scanf(" %c", &guessed_letters[i]);		//I don't know why putting a space in front of %c makes it work???
+
+		for (j = 0; j < wordlength; j++)
+		{
+			if (guessed_letters[i] == wordarray[row_index][j])
+				copyarray[j] = guessed_letters[i];
+			else
+				count++;
+			if (count == MAX_GUESSES)
+			{
+				//have to enter in a return to tell that you lost
+			}
+	
+		}
+		flag++;
+		i++;
+		initializeHangMan(wordlength, wordarray, row_index, flag, copyarray);
+	} while (!wongame && !lostgame);
+}
+
+
+
+/*
+Draws the hangman picture
+Parameter: Takes in number of lives lost, number of letters, int flag, and an array to copy
+Return Type: none (prints pic)
+*/
+void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int flag, char copyarray[])
+{
+	int i;
+	int cutoff;
+
+	//memset(underline, '_ ', wordlength);		useless due to for loop below but memset is cool
+	system("cls");
+	printf(" ____________________________\n"
+		"|  ______   ___________))____|\n"
+		"|  |    /  /           ||\n"
+		"|  |   /  /            ||      ");
+	if (wordlength <= 10)
+		printf("            ");
+
+//	if (flag)/////////////////////////////////////////////not working
+//	{
+//		for (i = 0; i < wordlength; i++)
+//		{
+//			printf("%c ", copyarray[i]);
+//		}
+//		printf("\n");
+//	}
+//	else
+//	{
+		cutoff = printbars(wordlength, wordarray, row_index, 0, copyarray);
+		printf("\n");
+//	}
+
+	printf("|  |  /  /             ||      ");
+	if (cutoff!=0)
+		printbars(wordlength, wordarray, row_index, cutoff, copyarray);
+	printf("\n");
+
+	printf("|  | /  /             .-~-.\n"
+		"|  |/  /             :     :\n"
+		"|  /  /              ' x  x'\n"
+		"|    /               '.___.'\n");
+	
+	printf("|   /                .~~||~.\n"
+		"|  /                /Y .  .Y\\       Guessed:  ");
+	//////////////////////////////////////////////////////////////ADD GUESSES_LETTERS array and printf
+//	if (flag)
+//	{
+//		for (i = 0; i < wordlength; i++)
+//		{
+//			printf("%c ", copyarray[i]);
+//		}
+//	}
+//	else
+		printf("\n");
+
+
+	printf("|  |               //|     |\\\\ \n"							//MUST INCLUDE two backslashes in order for \ to show
+		"|  |              // |   . | \\\\ \n"
+		"|  |             (o  \\_____/  o) \n"
+		"|  |                 (     ) \n"
+		"|  |                 | /^\\ | \n"
+		"|  |                 | | | | \n"
+		"|  |                 | | | | \n"
+		"|  |                (__) (__) \n"
+		"|  |________________   \n"
+		"|                   \\ \n"
+		"|____________________\\ \n");
+}
+
+/*
+Prints underscores and any symbols that aren't letters
+Parameters: length of the word being printed, and the word itself, index of starting, copy array
+Return Type: the index where it cuts off
+*/
+int printbars(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int start, char copyarray[])
+{
+	int i;
+	static int count = 0;					//static means once the function is left and is called again, the value is saved
+
+	for (i = 0; i < wordlength; i++)
+	{
+		if (wordarray[row_index][i] == '-')
+			copyarray[i] = ' ';
+		else if (wordarray[row_index][i] == '\'')
+			copyarray[i] = '\'';
+		else if (wordarray[row_index][i] == '?')
+			copyarray[i] = '?';
+		else if (wordarray[row_index][i] == ',')
+			copyarray[i] = ',';
+		else if (wordarray[row_index][i] == '.')
+			copyarray[i] = '.';
+		else
+			copyarray[i] = '_';
+	}
+	copyarray[i] = '\0';
+
+	for (i = start; i < wordlength; i++)
+	{
+		printf("%c ", copyarray[i]);
+
+		if (i >= 20 && wordarray[row_index][i] == '-' && count == 0)
+		{
+			count++;
+			return i;
+		}
+	}
+	
+	return 0;
+}
+
+/*
+Copies a string stored in a 1D array into a 2D array
+Parameters: char 1D array, char 2D array, int index
+Return Type: none
+*/
+void copy_1D_to_2D(char word[MAX_NAME_LENGTH], char wordarray[][MAX_NAME_LENGTH], int i)
+{
+	int length;
+	int count;
+
+	length = strlen(word);
+	for (count = 0; count < length; count++)
+	{
+		wordarray[i][count] = word[count];
+	}
+	wordarray[i][count] = '\0';
+}
+
+
+
+
+
+/*
 play TicTacToe, calling all appropriate functions
 Parameters: name of original player
 Return Type: none
 */
-void playTicTacToe(char name1[])
+void playTicTacToe(void)
 {
 	char copyname[MAX_NAME_LENGTH];
 	char grid[ROW_SIZE][COLUMN_SIZE];
@@ -99,19 +351,10 @@ void playTicTacToe(char name1[])
 	int index = 0;
 	int result = FALSE;
 
-	printf("Hi %s, welcome to Tic-Tac-Toe, enter your opponents name: \n", name1);
-	Sleep(1500);
-	printf("\nWait...\n");
-	Sleep(1500);
-	printf("\nWhat was your name again? I'm sorry I have terrible memory (heads up you will\nbe going second): ");
-	scanf("%s", ordername[index + 1]);
-	printf("\nJust kidding, the creator of the program had to find an alternative way to\ndo something.\n");
-	Sleep(1500);
-	printf("\nLet's start over...");
-	Sleep(1250);
-	system("cls");
-	printf("Welcome back %s! Enter the name of the opponent: ", ordername[index + 1]);
+	printf("Who wants to go first? Enter name: ");
 	scanf("%s", ordername[index]);
+	printf("Enter the name of the opponent: ");
+	scanf("%s", ordername[index+1]);
 	printf("%s would you like to be X or O? Enter the character: ", ordername[index]);
 	scanf(" %c", &symbol2);			//the empty space in front of %c tells to ignore invisible character i.e. '\n'
 
