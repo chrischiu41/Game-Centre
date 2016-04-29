@@ -35,7 +35,7 @@
 #define FALSE 0
 #define TIE 3
 #define MAX_ROLL 6
-#define MAX_NAME_LENGTH 1000
+#define MAX_NAME_LENGTH 100
 
 #define ROW_SIZE 5
 #define COLUMN_SIZE 33
@@ -71,7 +71,7 @@ int fillGrid(int position, char symbol, char grid[ROW_SIZE][COLUMN_SIZE]);
 int round_TTT(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH]);
 //hangman
 void playHangMan(void);
-void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int flag, char copyarray[]);
+void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]);
 int printbars(int wordlength, int start, char copyarray[]);
 void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, int index_of_correct[], int flag, char copyarray[]);
 
@@ -135,8 +135,8 @@ void playHangMan(void)
 	int flag = 0;
 
 	col_index = rand() % NUMCOLS;
-	//col_index = 4;///////////////////////////////////
-	inFile = fopen(category[col_index], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
+	col_index = 4;///////////////////////////////////
+	inFile = fopen(category[4], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
 	if (inFile == NULL)
 		printf("Error: could not locate file.\n");
 	else
@@ -172,7 +172,7 @@ void playHangMan(void)
 		}
 		copyarray[i] = '\0';
 
-		initializeHangMan(length, wordarray, row_index, flag, copyarray);
+		initializeHangMan(length, row_index, flag, copyarray);
 		printf("%s", wordarray[row_index]);
 	
 		fill_bar(length, wordarray, row_index, index_of_correct, flag, copyarray);
@@ -215,7 +215,7 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 		}
 		flag++;
 		i++;
-		initializeHangMan(wordlength, wordarray, row_index, flag, copyarray);
+		initializeHangMan(wordlength, row_index, flag, copyarray);
 	} while (!wongame && !lostgame);
 }
 
@@ -226,7 +226,7 @@ Draws the hangman picture
 Parameter: Takes in number of lives lost, number of letters, int flag, and an array to copy
 Return Type: none (prints pic)
 */
-void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, int flag, char copyarray[])
+void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[])
 {
 	int i;
 	int cutoff;
@@ -248,9 +248,9 @@ void initializeHangMan(int wordlength, char wordarray[][MAX_NAME_LENGTH], int ro
 			printbars(wordlength, cutoff, copyarray);
 		printf("\n");
 	}
-	else if (flag)
+	else
 	{
-		cutoff = printbars(wordlength, flag, copyarray);
+		cutoff = printbars(wordlength, 0, copyarray);
 		printf("\n");
 		printf("|  |  /  /             ||      ");
 		if (cutoff != 0)
@@ -306,7 +306,7 @@ int printbars(int wordlength, int start, char copyarray[])
 	{
 		printf("%c ", copyarray[i]);
 
-		if (i >= 20 && copyarray[i] == '-' && count == 0)
+		if (i >= 20 && copyarray[i] == ' ' && count==0)
 		{
 			count++;
 			return i;
