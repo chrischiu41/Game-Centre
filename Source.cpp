@@ -196,13 +196,36 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 	int z = 0;
 	int count = 0;
 	int gameend = -1;
+	int already_guessed;
+	char character;
 	
 	flag = 0;
 	do
 	{	
+		already_guessed = FALSE;
 		match = FALSE;
+
 		printf("Enter a letter: ");
-		scanf(" %c", &guessed_letters[i]);		//I don't know why putting a space in front of %c makes it work???
+		do
+		{
+			already_guessed = FALSE;
+			scanf(" %c", &character);		//I don't know why putting a space in front of %c makes it work???
+			printf("Entered: %c\n", character);//
+			for (k = 0; k < 26; k++)
+			{
+				if (character == guessed_letters[k])
+				{
+					already_guessed = TRUE;
+					printf("%c", guessed_letters[k]);//
+					printf("You've already guessed this letter, guess again: ");
+					break;
+				}
+			}
+			if (already_guessed == FALSE)
+				guessed_letters[i] = character;
+			
+		} while (already_guessed);
+
 		guessed_letters[i + 1] = '\0';
 
 		for (j = 0; j < wordlength; j++)
@@ -217,9 +240,9 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 		if (!match)
 		{
 			count++;
-			printf("WRONG");
-			printf(" %d", count);
-			Sleep(1000);
+			printf("WRONG");/////
+			printf(" %d", count);//////
+			Sleep(1000);///////
 
 			if (count == MAX_GUESSES)
 				gameend = LOST;
