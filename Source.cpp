@@ -138,58 +138,66 @@ void playHangMan(void)
 	int length;
 	int flag = 0;
 	int result;
-	char guessed_letters[26] = { ' ' };
+	char guessed_letters[26];
 
-	col_index = rand() % NUMCOLS;
-	inFile = fopen(category[col_index], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
-	if (inFile == NULL)
-		printf("Error: could not locate file.\n");
-	else
-	{
-		while (fscanf(inFile, "%s", &word) == 1)
-		{
-			copy_1D_to_2D(word, wordarray, i);
-			i++;
-		}
-		fclose(inFile);
-
-		if (col_index == 4)
-			row_index = rand() % (NUMCOLSPALINDROME-1);
-		else
-			row_index = rand() % NUMROWS;
-
-		length = strlen(wordarray[row_index]);
-
-		for (i = 0; i < length; i++)
-		{
-			if (wordarray[row_index][i] == '-')
-			{
-				copyarray[i] = ' ';
-				wordarray[row_index][i] = ' ';
-			}
-			else if (wordarray[row_index][i] == '\'')
-				copyarray[i] = '\'';
-			else if (wordarray[row_index][i] == '?')
-				copyarray[i] = '?';
-			else if (wordarray[row_index][i] == ',')
-				copyarray[i] = ',';
-			else if (wordarray[row_index][i] == '.')
-				copyarray[i] = '.';
-			else
-				copyarray[i] = '_';
-		}
-		copyarray[i] = '\0';
-
-		initializeHangMan(length, row_index, flag, copyarray, guessed_letters, 0);
 	
-		result = fill_bar(length, wordarray, row_index, guessed_letters, flag, copyarray);
-		if (result == 0)
-			printf("You lost.\n");
-		else
-			printf("You won!\n");
 
-	}
-			
+	do
+	{
+		memset(guessed_letters, ' ', 26);				//memset to reset arrays every time you play again
+		memset(wordarray, ' ', MAX_NAME_LENGTH);
+		memset(word, ' ', MAX_NAME_LENGTH);
+		col_index = rand() % NUMCOLS;
+		inFile = fopen(category[col_index], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
+		if (inFile == NULL)
+			printf("Error: could not locate file.\n");
+		else
+		{
+			while (fscanf(inFile, "%s", &word) == 1)
+			{
+				copy_1D_to_2D(word, wordarray, i);
+				i++;
+			}
+			fclose(inFile);
+
+			if (col_index == 4)
+				row_index = rand() % (NUMCOLSPALINDROME - 1);
+			else
+				row_index = rand() % NUMROWS;
+
+			length = strlen(wordarray[row_index]);
+
+			for (i = 0; i < length; i++)
+			{
+				if (wordarray[row_index][i] == '-')
+				{
+					copyarray[i] = ' ';
+					wordarray[row_index][i] = ' ';
+				}
+				else if (wordarray[row_index][i] == '\'')
+					copyarray[i] = '\'';
+				else if (wordarray[row_index][i] == '?')
+					copyarray[i] = '?';
+				else if (wordarray[row_index][i] == ',')
+					copyarray[i] = ',';
+				else if (wordarray[row_index][i] == '.')
+					copyarray[i] = '.';
+				else
+					copyarray[i] = '_';
+			}
+			copyarray[i] = '\0';
+
+			initializeHangMan(length, row_index, flag, copyarray, guessed_letters, 0);
+
+			result = fill_bar(length, wordarray, row_index, guessed_letters, flag, copyarray);
+			if (result == 0)
+				printf("You lost.\n");
+			else
+				printf("You won!\n");
+
+		}
+
+	} while (doAgain());
 }
 
 /*
@@ -332,7 +340,8 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 		printf("%.*s\n", 10, head4);
 		printf("%.*s\n", 10, body1);
 		printf("%.*s", 20, body2);
-		printf("               Guessed: \n");
+		printf("               Guessed: ");
+		print_guessed_letters(wrongguesses, guessed_letters);
 		printf("|  |\n");
 		printf("%.*s\n", 10, body4);
 		printf("%.*s\n", 10, body5);
@@ -478,7 +487,14 @@ void print_guessed_letters(int wrongguesses, char guessed_letters[])
 {
 	int length, i;
 
-	if (wrongguesses == 1)
+	if (wrongguesses == 0)
+	{
+		length = strlen(guessed_letters);
+		for (i = 0; i < 13; i++)
+			printf("%c ", guessed_letters[i]);
+		printf("\n");
+	}
+	else if (wrongguesses == 1)
 	{
 		{
 			length = strlen(guessed_letters);
