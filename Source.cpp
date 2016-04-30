@@ -71,9 +71,10 @@ int fillGrid(int position, char symbol, char grid[ROW_SIZE][COLUMN_SIZE]);
 int round_TTT(char grid[][COLUMN_SIZE], char ordersymbol[], char ordername[][MAX_NAME_LENGTH]);
 //hangman
 void playHangMan(void);
-void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[], char guessed_letters[]);
+void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[], char guessed_letters[], int wrongguesses);
 int printbars(int wordlength, int start, char copyarray[], int loopnum);
-void fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, char guessed_letters[26], int flag, char copyarray[]);
+int fill_bar(int length, char wordarray[][MAX_NAME_LENGTH], int row_index, char guessed_letters[26], int flag, char copyarray[]);
+void print_guessed_letters(int wrongguesses, char guessed_letters[]);
 
 //universal
 void adding_apos_s(int name_position, char name[][MAX_NAME_LENGTH], char copyname[]);
@@ -85,12 +86,15 @@ int main(void)
 	//char name[MAX_NAME_LENGTH];
 	int gamenum;
 	char response;
+	int flag = 0;
 	srand(time(NULL));
 
 	printf("Hi my name is Pixel...Welcome to the Game Centre,\n");
 	//scanf("%s", &name);
 
 	do{
+		if (flag)
+			system("cls");
 		printf("\nWhat game would you like to play?\n"
 			"1. Craps\n"
 			"2. Tic-Tac-Toe\n"
@@ -109,6 +113,7 @@ int main(void)
 			printf("Game under development.\n");
 
 		response = playAgain();
+		flag = 1;
 	} while (response == 'y' || response == 'Y');
 
 
@@ -132,11 +137,11 @@ void playHangMan(void)
 	int i = 0;
 	int length;
 	int flag = 0;
+	int result;
 	char guessed_letters[26] = { ' ' };
 
 	col_index = rand() % NUMCOLS;
-	col_index = 4;///////////////////////////////////
-	inFile = fopen(category[4], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
+	inFile = fopen(category[col_index], "r");				//CHANGE FROM 4 BACK TO col_index after done debugging
 	if (inFile == NULL)
 		printf("Error: could not locate file.\n");
 	else
@@ -175,10 +180,14 @@ void playHangMan(void)
 		}
 		copyarray[i] = '\0';
 
-		initializeHangMan(length, row_index, flag, copyarray, guessed_letters);
-		printf("%s", wordarray[row_index]);
+		initializeHangMan(length, row_index, flag, copyarray, guessed_letters, 0);
 	
-		fill_bar(length, wordarray, row_index, guessed_letters, flag, copyarray);
+		result = fill_bar(length, wordarray, row_index, guessed_letters, flag, copyarray);
+		if (result == 0)
+			printf("You lost.\n");
+		else
+			printf("You won!\n");
+
 	}
 			
 }
@@ -186,9 +195,9 @@ void playHangMan(void)
 /*
 Fills in letters that are correct
 Parameter: the word length, the word, the row index, array of guessed letters, and a flag (0 for empty and 1 to change), copyarray
-Return Type: none
+Return Type: 0 if lost, 1 if won
 */
-void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, char guessed_letters[], int flag, char copyarray[])
+int fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, char guessed_letters[], int flag, char copyarray[])
 {
 	int match;
 	int i = 0;
@@ -210,13 +219,11 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 		{
 			already_guessed = FALSE;
 			scanf(" %c", &character);		//I don't know why putting a space in front of %c makes it work???
-			printf("Entered: %c\n", character);//
 			for (k = 0; k < 26; k++)
 			{
 				if (character == guessed_letters[k])
 				{
 					already_guessed = TRUE;
-					printf("%c", guessed_letters[k]);//
 					printf("You've already guessed this letter, guess again: ");
 					break;
 				}
@@ -240,10 +247,6 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 		if (!match)
 		{
 			count++;
-			printf("WRONG");/////
-			printf(" %d", count);//////
-			Sleep(1000);///////
-
 			if (count == MAX_GUESSES)
 				gameend = LOST;
 		}
@@ -255,25 +258,37 @@ void fill_bar(int wordlength, char wordarray[][MAX_NAME_LENGTH], int row_index, 
 
 		flag++;
 		i++;
-		initializeHangMan(wordlength, row_index, flag, copyarray, guessed_letters);
+		initializeHangMan(wordlength, row_index, flag, copyarray, guessed_letters, count);
 	} while (gameend == -1);
 
-	
+	return gameend;
 }
-
-
 
 /*
 Draws the hangman picture
 Parameter: Takes in number of lives lost, number of letters, int flag, and an array to copy
 Return Type: none (prints pic)
 */
-void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[], char guessed_letters[26])
+void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[], char guessed_letters[26], int wrongguesses)
 {
-	int i;
+	int i, j;
 	int cutoff;
 	int loopnum=0;
 	int length;
+	char head1[] = { "|  | /  /             .-~-. " };
+	char head2[] = { "|  |/  /             :     :" };
+	char head3[] = { "|  /  /              ' x  x'" };
+	char head4[] = { "|    /               '.___.'" };
+	char body1[] = { "|   /                .~| |~." };
+	char body2[] = { "|  /                /Y .  .Y\\     Guessed: " };
+	char body3[] = { "|  |               //|     |\\\\ " };
+	char body4[] = { "|  |              // |   . | \\\\ " };
+	char body5[] = { "|  |             (o  \\_____/  o) " };
+	char legs1[] = { "|  |                 (     ) " };
+	char legs2[] = { "|  |                 | /^\\ | " };
+	char legs3[] = { "|  |                 | | | | " };
+	char legs4[] = { "|  |                 | | | | " };
+	char legs5[] = { "|  |                (__) (__)" };
 
 	//memset(underline, '_ ', wordlength);		useless due to for loop below but memset is cool
 	system("cls");
@@ -287,7 +302,7 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 	{
 		cutoff = printbars(wordlength, 0, copyarray, 0);
 		printf("\n");
-		printf("|  |  /  /             ||        ");
+		printf("|  |  /  /             ||       ");
 		if (cutoff != 0)
 		{
 			loopnum++;
@@ -299,7 +314,7 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 	{
 		cutoff = printbars(wordlength, 0, copyarray, 0);
 		printf("\n");
-		printf("|  |  /  /             ||        ");
+		printf("|  |  /  /             ||       ");
 		if (cutoff != 0)
 		{
 			loopnum++;
@@ -309,15 +324,206 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 	}
 	
 
+	if (wrongguesses == 0)
+	{
+		printf("%.*s\n", 10, head1);				//%.*s will print first n chars, in this case 10
+		printf("%.*s\n", 10, head2);
+		printf("%.*s\n", 10, head3);
+		printf("%.*s\n", 10, head4);
+		printf("%.*s\n", 10, body1);
+		printf("%.*s", 20, body2);
+		printf("               Guessed: \n");
+		printf("|  |\n");
+		printf("%.*s\n", 10, body4);
+		printf("%.*s\n", 10, body5);
+		printf("%.*s\n", 10, legs1);
+		printf("%.*s\n", 10, legs2);
+		printf("%.*s\n", 10, legs3);
+		printf("%.*s\n", 10, legs4);
+		printf("%.*s\n", 10, legs5);
+		printf("|  |________________   \n"
+		"|                   \\ \n"
+		"|____________________\\ \n");
+	}
+	else if (wrongguesses == 1)
+	{
+		printf("%s\n", head1);
+		printf("%s\n", head2);
+		printf("%s\n", head3);
+		printf("%s\n", head4);
+		printf("%.*s\n", 10, body1);
+		printf("%.*s", 20, body2);
+		printf("               Guessed: ");
+		print_guessed_letters(wrongguesses, guessed_letters);
+		printf("%.*s\n", 10, body4);
+		printf("%.*s\n", 10, body5);
+		printf("%.*s\n", 10, legs1);
+		printf("%.*s\n", 10, legs2);
+		printf("%.*s\n", 10, legs3);
+		printf("%.*s\n", 10, legs4);
+		printf("%.*s\n", 10, legs5);
+		printf("|  |________________   \n"
+			"|                   \\ \n"
+			"|____________________\\ \n");
+	}
+	else if (wrongguesses == 2)
+	{
+		printf("%s\n", head1);
+		printf("%s\n", head2);
+		printf("%s\n", head3);
+		printf("%s\n", head4);
+		printf("%s\n", body1);
+		printf("|  /                 Y .  .Y       Guessed: ");
+		print_guessed_letters(wrongguesses, guessed_letters);
+		printf("|  |                 |   . |  \n"
+			"|  |                 \\_____/  \n");
+		printf("%.*s\n", 10, legs1);
+		printf("%.*s\n", 10, legs2);
+		printf("%.*s\n", 10, legs3);
+		printf("%.*s\n", 10, legs4);
+		printf("%.*s\n", 10, legs5);
+		printf("|  |________________   \n"
+			"|                   \\ \n"
+			"|____________________\\ \n");
+	}
+	else if (wrongguesses == 3)
+	{
+		printf("%s\n", head1);
+		printf("%s\n", head2);
+		printf("%s\n", head3);
+		printf("%s\n", head4);
+		printf("%s\n", body1);
+		printf("|  /                /Y .  .Y      Guessed: ");
+		print_guessed_letters(wrongguesses, guessed_letters);
+		printf("|  |              // |   . |  \n"
+		"|  |             (o  \\_____/    \n");
+		printf("%.*s\n", 10, legs1);
+		printf("%.*s\n", 10, legs2);
+		printf("%.*s\n", 10, legs3);
+		printf("%.*s\n", 10, legs4);
+		printf("%.*s\n", 10, legs5);
+		printf("|  |________________   \n"
+			"|                   \\ \n"
+			"|____________________\\ \n");
+	}
+	else if (wrongguesses == 4)
+	{
+		printf("%s\n", head1);
+		printf("%s\n", head2);
+		printf("%s\n", head3);
+		printf("%s\n", head4);
+		printf("%s\n", body1);
+		printf("%s", body2);
+		print_guessed_letters(wrongguesses, guessed_letters);
+		printf("%s\n", body4);
+		printf("%s\n", body5);
+		printf("%.*s\n", 10, legs1);
+		printf("%.*s\n", 10, legs2);
+		printf("%.*s\n", 10, legs3);
+		printf("%.*s\n", 10, legs4);
+		printf("%.*s\n", 10, legs5);
+		printf("|  |________________   \n"
+			"|                   \\ \n"
+			"|____________________\\ \n");
+	}
+	else if (wrongguesses == 5)
+	{
+		printf("%s\n", head1);
+		printf("%s\n", head2);
+		printf("%s\n", head3);
+		printf("%s\n", head4);
+		printf("%s\n", body1);
+		printf("%s", body2);
+		print_guessed_letters(wrongguesses, guessed_letters);
+		printf("%s\n", body4);
+		printf("%s\n", body5);
+		printf("%.*s", 24, legs1);
+		printf("|\n");
+		printf("%.*s\n", 24, legs2);
+		printf("%.*s\n", 24, legs3);
+		printf("%.*s\n", 24, legs4);
+		printf("%.*s\n", 24, legs5);
+		printf("|  |________________   \n"
+			"|                   \\ \n"
+			"|____________________\\ \n");
+	}
+	else if (wrongguesses == 6)
+	{
+		printf("%s\n", head1);
+		printf("%s\n", head2);
+		printf("%s\n", head3);
+		printf("%s\n", head4);
+		printf("%s\n", body1);
+		printf("%s", body2);
+		print_guessed_letters(wrongguesses, guessed_letters);
+		printf("%s\n", body4);
+		printf("%s\n", body5);
+		printf("%s\n", legs1);
+		printf("%s\n", legs2);
+		printf("%s\n", legs3);
+		printf("%s\n", legs4);
+		printf("%s\n", legs5);
+		printf("|  |________________   \n"
+			"|                   \\ \n"
+			"|____________________\\ \n");
+	}
+}
 
-	printf("|  | /  /             .-~-.\n"
-		"|  |/  /             :     :\n"
-		"|  /  /              ' x  x'\n"
-		"|    /               '.___.'\n");
-	printf("|   /                .~| |~.\n"
-		"|  /                /Y .  .Y\\     Guessed: ");
+/*
+Prints guessed letters
+Parameters: number of wrong guesses and array of guessed letters
+Return Type: none
+*/
+void print_guessed_letters(int wrongguesses, char guessed_letters[])
+{
+	int length, i;
 
-	if (flag)
+	if (wrongguesses == 1)
+	{
+		{
+			length = strlen(guessed_letters);
+			for (i = 0; i < 13; i++)
+				printf("%c ", guessed_letters[i]);
+			printf("\n|  |                                           ");
+			while (i < length)
+			{
+				printf("%c ", guessed_letters[i]);
+				i++;
+			}
+			printf("\n");
+		}
+	}
+	else if (wrongguesses == 2)
+	{
+		{
+			length = strlen(guessed_letters);
+			for (i = 0; i < 13; i++)
+				printf("%c ", guessed_letters[i]);
+			printf("\n|  |                 |     |                   ");
+			while (i < length)
+			{
+				printf("%c ", guessed_letters[i]);
+				i++;
+			}
+			printf("\n");
+		}
+	}
+	else if (wrongguesses == 3)
+	{
+		{
+			length = strlen(guessed_letters);
+			for (i = 0; i < 13; i++)
+				printf("%c ", guessed_letters[i]);
+			printf("\n|  |               //|     |                   ");
+			while (i < length)
+			{
+				printf("%c ", guessed_letters[i]);
+				i++;
+			}
+			printf("\n");
+		}
+	}
+	else
 	{
 		length = strlen(guessed_letters);
 		for (i = 0; i < 13; i++)
@@ -330,19 +536,8 @@ void initializeHangMan(int wordlength, int row_index, int flag, char copyarray[]
 		}
 		printf("\n");
 	}
-	else
-		printf("\n|  |               //|     |\\\\ \n");							//MUST INCLUDE two backslashes in order for \ to show
-	printf("|  |              // |   . | \\\\ \n"
-		"|  |             (o  \\_____/  o) \n"
-		"|  |                 (     ) \n"
-		"|  |                 | /^\\ | \n"
-		"|  |                 | | | | \n"
-		"|  |                 | | | | \n"
-		"|  |                (__) (__) \n"
-		"|  |________________   \n"
-		"|                   \\ \n"
-		"|____________________\\ \n");
 }
+
 
 /*
 Prints underscores and any symbols that aren't letters
@@ -357,7 +552,7 @@ int printbars(int wordlength, int start, char copyarray[], int loopnum)
 	{
 		printf("%c ", copyarray[i]);
 
-		if (i >= 20 && copyarray[i] == ' ' && loopnum == 0)
+		if (i >= 18 && copyarray[i] == ' ' && loopnum == 0)
 		{
 			loopnum++;
 			return i;
