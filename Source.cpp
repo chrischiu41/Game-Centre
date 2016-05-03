@@ -137,9 +137,12 @@ void playHangMan(void)
 	int i = 0;
 	int length;
 	int flag = 0;
+	int flag1 = 0;
 	int index;
 	int result;
 	char guessed_letters[26];
+	int used_words[MAX_NAME_LENGTH] = { 0 };		//store column and row index alternating
+	int already_used;
 
 	do
 	{
@@ -149,7 +152,42 @@ void playHangMan(void)
 		memset(word, 0, sizeof(word));
 		memset(copyarray, 0, sizeof(copyarray));
 
-		col_index = rand() % NUMCOLS;
+		do
+		{
+			already_used = FALSE;
+
+			col_index = rand() % NUMCOLS;
+			if (col_index == 4)
+				row_index = rand() % NUMCOLSPALINDROME;
+			else
+				row_index = rand() % NUMROWS;
+
+			if (flag1 == 0)
+			{
+				used_words[0] = col_index;
+				used_words[1] = row_index;
+				flag1++;
+				index = 2;
+			}
+			else
+			{
+				for (i = 0; i < MAX_NAME_LENGTH; i += 2)
+				{
+					if (used_words[i] == col_index)
+					{
+						if (used_words[i + 1] == row_index)
+							already_used = TRUE;
+					}
+				}
+				if (!already_used)
+				{
+					used_words[index] = col_index;
+					used_words[index + 1] = row_index;
+					index += 2;
+				}
+			}
+		} while (already_used);
+
 		inFile = fopen(category[col_index], "r");	
 		if (inFile == NULL)
 			printf("Error: could not locate file.\n");
@@ -161,11 +199,6 @@ void playHangMan(void)
 				copy_1D_to_2D(word, wordarray, i);
 				i++;
 			}
-
-			if (col_index == 4)
-				row_index = rand() % NUMCOLSPALINDROME;
-			else
-				row_index = rand() % NUMROWS;
 
 			length = strlen(wordarray[row_index]);
 
